@@ -219,6 +219,7 @@ const SECTIONS: [(Option<&str>, &[Entry]); 7] = [
             M(46),
             M(24),
             M(43),
+            M(honeydew_audio::ott::OTT),
         ],
     ),
     (Some("NOTE EFFECT"), &[M(51), M(47), M(49), M(50), M(48)]),
