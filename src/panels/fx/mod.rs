@@ -2,6 +2,7 @@
 //! `REFERENCE`, the section table's rects for the data-driven test.
 
 pub(super) use pitcher_2::derive_scale;
+pub(super) mod ott;
 pub(crate) use scale::couple_scale;
 pub(crate) use tremolo::couple_param;
 
