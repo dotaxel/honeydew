@@ -49,6 +49,7 @@ pub mod transistor_bass;
 pub mod voice;
 pub mod wav_writer;
 pub mod waveshaper;
+pub mod ott;
 
 use biquad::{Biquad, Response, flush};
 use comb::CombState;
@@ -111,6 +112,7 @@ pub fn effect_info(id: u16) -> Option<EffectInfo> {
         de_esser::DE_ESSER => ("De-esser", de_esser::PARAMS),
         denoise::DENOISE => ("Denoise", denoise::PARAMS),
         half_time::HALF_TIME => ("Half Time", half_time::PARAMS),
+        ott::OTT => ("OTT", ott::PARAMS),
         _ => return None,
     };
     Some(EffectInfo {
@@ -528,6 +530,11 @@ impl AudioEffect {
                     Processor::Denoise(Box::new(state)),
                 )
             }
+ott::OTT => {
+    let params = ott::DEFAULTS.to_vec();
+    let state = ott::OttState::new(&params, sample_rate);
+    (params, Processor::Ott(Box::new(state)))
+}
             half_time::HALF_TIME => {
                 let state = half_time::HalfTimeState::new(&half_time::DEFAULTS, sample_rate);
                 (
@@ -947,6 +954,7 @@ enum Processor {
     DeEsser(Box<de_esser::DeEsserState>),
     Denoise(Box<denoise::DenoiseState>),
     HalfTime(Box<half_time::HalfTimeState>),
+    Ott(Box<ott::OttState>),
     Monitor,
 }
 
@@ -993,6 +1001,7 @@ impl Processor {
             Self::DeEsser(state) => state.refresh(params, sample_rate),
             Self::Denoise(state) => state.refresh(params, sample_rate),
             Self::HalfTime(state) => state.refresh(params, sample_rate),
+            Self::Ott(state) => state.refresh(params, sample_rate),
             Self::Monitor => {}
         }
     }
@@ -1073,6 +1082,7 @@ impl Processor {
             Self::DeEsser(state) => state.process_frame(l, r),
             Self::Denoise(state) => state.process_frame(l, r),
             Self::HalfTime(state) => state.process_frame(l, r),
+            Self::Ott(state) => state.process_frame(l, r),
             Self::Monitor => (l, r),
         }
     }
@@ -1134,6 +1144,7 @@ impl Processor {
             Self::DeEsser(state) => state.reset(),
             Self::Denoise(state) => state.reset(),
             Self::HalfTime(state) => state.reset(),
+            Self::Ott(state) => state.reset(params),
             Self::Monitor => {}
         }
     }
@@ -1143,6 +1154,7 @@ impl Processor {
             Self::Compressor(state) => state.gain_reduction_db,
             Self::DeEsser(state) => state.reduction_db(),
             Self::Denoise(state) => state.reduction_db(),
+            Self::Ott(state) => state.gain_reduction_db(),
             _ => 0.0,
         }
     }
