@@ -1,0 +1,77 @@
+name: Android
+
+# Build Android (arm64 + x86_64) on the `android` branch and on demand.
+on:
+  push:
+    branches: [android]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@1.91.0
+        with:
+          targets: aarch64-linux-android, x86_64-linux-android
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: android
+          cache-on-failure: true
+          workspaces: |
+            .
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: android-actions/setup-android@v3
+
+      - name: NDK
+        id: ndk
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r27c
+
+      # libclang: bindgen in signalsmith-stretch's build script, same as the CI job.
+      - name: System libraries
+        run: sudo apt-get update && sudo apt-get install -y libclang-dev
+
+      - name: Install cargo-ndk
+        run: cargo install cargo-ndk --locked
+
+      # Rust side: one .so per ABI under the Gradle project's jniLibs.
+      - name: Native libraries
+        env:
+          ANDROID_NDK_HOME: ${{ steps.ndk.outputs.ndk-path }}
+        run: |
+          cargo ndk -t arm64-v8a -t x86_64 \
+            -o android/app/src/main/jniLibs \
+            build --release --lib
+
+      # Java side: debug APK is signed with the debug key, so it installs directly on a device.
+      - name: APK
+        working-directory: android
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Name
+        id: names
+        run: |
+          version=$(sed -n 's/^version = "\(.*\)"$/\1/p' Cargo.toml | head -n 1)
+          echo "apk=honeydew-android-$version-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.names.outputs.apk }}
+          path: android/app/build/outputs/apk/debug/*.apk
+          retention-days: 30
+          compression-level: 0
