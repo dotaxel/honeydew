@@ -52,10 +52,12 @@ jobs:
 
       # Output goes where android/app/build.gradle reads jniLibs: <buildDirectory>/jniLibs,
       # and buildDirectory is ../../target/android. --platform 26 because AAudio needs API 26+.
+      # --link-libcxx-shared copies libc++_shared.so next to libhoneydew.so, which the .so needs at runtime.
       - name: Native libraries
         run: |
           cargo ndk -t arm64-v8a -t armeabi-v7a -t x86_64 \
             --platform 26 \
+            --link-libcxx-shared \
             -o target/android/jniLibs \
             build --release --lib
 
