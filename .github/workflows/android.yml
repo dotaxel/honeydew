@@ -59,6 +59,20 @@ jobs:
             -o target/android/jniLibs \
             build --release --lib
 
+      # signingConfigs.debug reads android/debug.keystore, which isn't in the repo.
+      # Generate it with the standard Android debug credentials if it's missing.
+      - name: Debug keystore
+        working-directory: android
+        run: |
+          if [ ! -f debug.keystore ]; then
+            keytool -genkeypair -v \
+              -keystore debug.keystore \
+              -storepass android -keypass android \
+              -alias androiddebugkey \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -dname "CN=Android Debug,O=Android,C=US"
+          fi
+
       # HONEYDEW_ANDROID_BASE skips the check for sound assets, which the app downloads at runtime.
       # This produces the same base APK as `tools/android-dist.sh --base`.
       - name: APK
