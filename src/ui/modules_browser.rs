@@ -206,12 +206,14 @@ const SECTIONS: [(Option<&str>, &[Entry]); 7] = [
     (
         Some("MISC"),
         &[
+            M(honeydew_audio::allpassphase::ALLPASS_PHASE),
             M(26),
             M(11),
             M(13),
             M(honeydew_audio::half_time::HALF_TIME),
             M(honeydew_audio::modulator::MODULATOR),
             M(4),
+            M(honeydew_audio::ott::OTT),
             M(14),
             M(25),
             M(45),
@@ -219,7 +221,6 @@ const SECTIONS: [(Option<&str>, &[Entry]); 7] = [
             M(46),
             M(24),
             M(43),
-            M(honeydew_audio::ott::OTT),
         ],
     ),
     (Some("NOTE EFFECT"), &[M(51), M(47), M(49), M(50), M(48)]),

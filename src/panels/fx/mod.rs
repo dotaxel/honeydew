@@ -3,6 +3,7 @@
 
 pub(super) use pitcher_2::derive_scale;
 pub(super) mod ott;
+pub(super) mod allpassphase;
 pub(crate) use scale::couple_scale;
 pub(crate) use tremolo::couple_param;
 

@@ -50,6 +50,7 @@ pub mod voice;
 pub mod wav_writer;
 pub mod waveshaper;
 pub mod ott;
+pub mod allpassphase;
 
 use biquad::{Biquad, Response, flush};
 use comb::CombState;
@@ -113,6 +114,7 @@ pub fn effect_info(id: u16) -> Option<EffectInfo> {
         denoise::DENOISE => ("Denoise", denoise::PARAMS),
         half_time::HALF_TIME => ("Half Time", half_time::PARAMS),
         ott::OTT => ("OTT", ott::PARAMS),
+        allpassphase::ALLPASS_PHASE => ("AllPassPhase", allpassphase::PARAMS),
         _ => return None,
     };
     Some(EffectInfo {
@@ -530,11 +532,16 @@ impl AudioEffect {
                     Processor::Denoise(Box::new(state)),
                 )
             }
-ott::OTT => {
-    let params = ott::DEFAULTS.to_vec();
-    let state = ott::OttState::new(&params, sample_rate);
-    (params, Processor::Ott(Box::new(state)))
-}
+            ott::OTT => {
+                let params = ott::DEFAULTS.to_vec();
+                let state = ott::OttState::new(&params, sample_rate);
+                (params, Processor::Ott(Box::new(state)))
+            }
+            allpassphase::ALLPASS_PHASE => {
+                let params = allpassphase::DEFAULTS.to_vec();
+                let state = allpassphase::AllPassPhaseState::new(&params, sample_rate);
+                (params, Processor::AllPassPhase(Box::new(state)))
+            }
             half_time::HALF_TIME => {
                 let state = half_time::HalfTimeState::new(&half_time::DEFAULTS, sample_rate);
                 (
@@ -955,6 +962,7 @@ enum Processor {
     Denoise(Box<denoise::DenoiseState>),
     HalfTime(Box<half_time::HalfTimeState>),
     Ott(Box<ott::OttState>),
+    AllPassPhase(Box<allpassphase::AllPassPhaseState>),
     Monitor,
 }
 
@@ -1002,6 +1010,7 @@ impl Processor {
             Self::Denoise(state) => state.refresh(params, sample_rate),
             Self::HalfTime(state) => state.refresh(params, sample_rate),
             Self::Ott(state) => state.refresh(params, sample_rate),
+            Self::AllPassPhase(state) => state.refresh(params, sample_rate),
             Self::Monitor => {}
         }
     }
@@ -1083,6 +1092,7 @@ impl Processor {
             Self::Denoise(state) => state.process_frame(l, r),
             Self::HalfTime(state) => state.process_frame(l, r),
             Self::Ott(state) => state.process_frame(l, r),
+            Self::AllPassPhase(state) => state.process_frame(l, r),
             Self::Monitor => (l, r),
         }
     }
@@ -1145,6 +1155,7 @@ impl Processor {
             Self::Denoise(state) => state.reset(),
             Self::HalfTime(state) => state.reset(),
             Self::Ott(state) => state.reset(params),
+            Self::AllPassPhase(state) => state.reset(params),
             Self::Monitor => {}
         }
     }

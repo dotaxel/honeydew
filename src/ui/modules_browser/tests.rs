@@ -62,12 +62,14 @@ const SPEC: &[(&str, &[&str])] = &[
     (
         "MISC",
         &[
+            "AllPassPhase",
             "Analyzer",
             "Chorus",
             "Flanger",
             "Half Time",
             "Modulator",
             "MultiFX",
+            "OTT",
             "Phaser",
             "Pitcher",
             "Pitcher 2",
@@ -178,6 +180,7 @@ fn every_current_effect_is_listed_once_and_legacy_ids_never() {
     let current: Vec<u16> = (params::modules().chain(&params::LEMON_MODULES))
         .chain([&params::DYNAMIC_EQ, &params::MODULATOR])
         .chain([&params::DE_ESSER, &params::DENOISE, &params::HALF_TIME])
+        .chain([&params::OTT, &params::ALLPASS_PHASE])
         .filter(|m| !m.legacy)
         .map(|m| m.id)
         .collect();
@@ -291,6 +294,8 @@ fn search_keeps_matching_entries_and_hides_empty_sections() {
             "Paste",
             "FILTER",
             "Spacer",
+            "MISC",
+            "AllPassPhase",
             "LEMON STUDIO",
             "Lemon Parametric EQ"
         ],
@@ -954,7 +959,7 @@ fn top_level_lists_the_actions_then_the_instruments_then_the_effects_each_by_typ
             "Randomizer",
             "Scale",
             "Arpeggiator",
-            // Honeydew's own: 1002 … 1008, then the built-in plugin.
+            // Honeydew's own: 1002 … 1009 and 1011, then the built-in plugin.
             "Lemon Reverb",
             "Lemon Limiter",
             "Dynamic EQ",
@@ -962,6 +967,8 @@ fn top_level_lists_the_actions_then_the_instruments_then_the_effects_each_by_typ
             "De-esser",
             "Denoise",
             "Half Time",
+            "OTT",
+            "AllPassPhase",
             "Lemon Balance",
             "Lemon Chorus",
             "Lemon Delay",
@@ -1000,7 +1007,7 @@ fn a_z_lists_every_entry_by_its_name_naturally_with_no_sections() {
     let az = names(&super::rows("", ModuleOrdering::AZ, Takes::Instruments));
     let entries = rows("").into_iter().filter(|r| matches!(r, Row::Item(_)));
     assert_eq!(az.len(), entries.count());
-    assert_eq!(&az[..4], ["3x Osc", "Analyzer", "Arpeggiator", "Autoduck"]);
+    assert_eq!(&az[..4], ["3x Osc", "AllPassPhase", "Analyzer", "Arpeggiator"]);
     let at = |name| az.iter().position(|n| *n == name).unwrap();
     assert_eq!(
         (at("Pitcher") + 1, at("Reverb") + 1),

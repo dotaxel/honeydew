@@ -5,6 +5,7 @@
 //! The stored param numbers (param 0 is always `Enable`), shared with the audio side.
 
 mod ott;
+mod allpassphase;
 mod channel;
 mod de_esser;
 mod denoise;
@@ -31,6 +32,7 @@ pub use channel::{CHANNEL_PARAMS, COMMON_PARAMS, DRUM_SLOT_PARAMS};
 /// The De-esser and Denoise, Honeydew's own effects (`honeydew_audio::de_esser`, `honeydew_audio::denoise`).
 
 pub use ott::MODULE as OTT;
+pub use allpassphase::MODULE as ALLPASS_PHASE;
 pub use de_esser::MODULE as DE_ESSER;
 pub use denoise::MODULE as DENOISE;
 pub(crate) use display::clamp01;
@@ -321,7 +323,7 @@ pub fn module_spec(id: u16) -> Option<&'static ModuleSpec> {
         .chain(instruments())
         .chain(&PLUGINS)
         .chain(&LEMON_MODULES)
-        .chain([&DYNAMIC_EQ, &MODULATOR, &DE_ESSER, &DENOISE, &HALF_TIME, &OTT])
+        .chain([&DYNAMIC_EQ, &MODULATOR, &DE_ESSER, &DENOISE, &HALF_TIME, &OTT, &ALLPASS_PHASE])
         .find(|m| m.id == id)
 }
 

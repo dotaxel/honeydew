@@ -475,6 +475,10 @@ pub fn panel_for(type_id: u16) -> Option<&'static Panel> {
             (honeydew_audio::denoise::DENOISE, fx::denoise::panel()),
             (honeydew_audio::half_time::HALF_TIME, fx::half_time::panel()),
 (honeydew_audio::ott::OTT, fx::ott::panel()),
+            (
+                honeydew_audio::allpassphase::ALLPASS_PHASE,
+                fx::allpassphase::panel(),
+            ),
         ];
         fx.chain(inst).chain(lemon).collect()
     });
